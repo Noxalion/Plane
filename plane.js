@@ -1,6 +1,4 @@
-var world;
-
-let plane;
+let world;
 
 const   b2Vec2 = Box2D.Common.Math.b2Vec2
     	,	b2BodyDef = Box2D.Dynamics.b2BodyDef
@@ -18,71 +16,97 @@ world = new b2World(
     true                 //allow sleep
 );
 
-var fixDef = new b2FixtureDef;
-fixDef.density = 1.0;
-fixDef.friction = 0.9;
-fixDef.restitution = 0.2;
+let groundBody = new b2BodyDef;
+let groundFix = new b2FixtureDef;
 
-var bodyDef = new b2BodyDef;
-//create ground
-bodyDef.type = b2Body.b2_staticBody;
-bodyDef.position.x = 0;
-bodyDef.position.y = 35;
-fixDef.shape = new b2PolygonShape;
-fixDef.shape.SetAsBox(200, 0.5);
-world.CreateBody(bodyDef).CreateFixture(fixDef);
+function createGround(){
+    groundFix.friction = 0.9;
 
-//create some objects
-bodyDef.type = b2Body.b2_dynamicBody;
-fixDef.shape = new b2PolygonShape;
-fixDef.shape.SetAsBox(0.5, 0.5);
-bodyDef.position.x = 5;
-bodyDef.position.y = 34;
-plane = world.CreateBody(bodyDef);
-plane.CreateFixture(fixDef);
+    groundBody.type = b2Body.b2_staticBody;
+    groundBody.position.x = 0;
+    groundBody.position.y = 40;
+    groundFix.shape = new b2PolygonShape;
+    groundFix.shape.SetAsBox(200, 3);
+    world.CreateBody(groundBody).CreateFixture(groundFix);
+}
+
+let planeBody = new b2BodyDef;
+let planeFix = new b2FixtureDef;
+let plane;
+
+function createPlane(){
+    planeFix.density = 120.0 / 10; //densité réel = 120.0 pcq 1800 kg
+    planeFix.friction = groundFix.friction;
+    planeFix.restitution = 0.2;
+
+    planeBody.type = b2Body.b2_dynamicBody;
+    planeFix.shape = new b2PolygonShape;
+    planeFix.shape.SetAsBox(7.5 / 10, 2 / 10); //taille réelle: L = 7.5 et l = 2
+    planeBody.position.x = 2;
+    planeBody.position.y = 36.5;
+    plane = world.CreateBody(planeBody);
+    plane.CreateFixture(planeFix);
+}
 
 //setup debug draw
 var debugDraw = new b2DebugDraw();		
 debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));		
-debugDraw.SetDrawScale(30.0);		
+debugDraw.SetDrawScale(30.0);
 debugDraw.SetFillAlpha(0.3);		
 debugDraw.SetLineThickness(1.0);		
 debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);		
 world.SetDebugDraw(debugDraw);
 
-//window.setInterval(update, 1000 / 60);
+createGround();
+createPlane();
 window.requestAnimationFrame(update);
 
+let key = "none";
 
 document.addEventListener('keydown', function(event) {
-    const key = event.key; // "ArrowRight", "ArrowLeft", "ArrowUp", or "ArrowDown"
-
-    switch (key) {
-        case "ArrowLeft":
-            plane.ApplyForce(new b2Vec2(-100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-            // Left pressed
-            break;
-        case "ArrowRight":
-            plane.ApplyForce(new b2Vec2(100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-            // Right pressed
-            break;
-        case "ArrowUp":
-            // Up pressed
-            break;
-        case "ArrowDown":
-            // Down pressed
-            break;
-    }
+    key = event.key;
 });
 
+document.addEventListener('keyup', function() {
+    key = "none";
+});
+
+/*function goUpward(){
+    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+}*/
+
+function liftOnFront(){
+    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x - (7.5 / 10) / 2, plane.GetPosition().y));
+}
+
+function liftOnBack(){
+    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x + (7.5 / 10) / 2, plane.GetPosition().y));
+}
+
+
 function update() {
-    //let speed = Math.sqrt(Math.pow(plane.GetLinearVelocity().x, 2) + Math.pow(plane.GetLinearVelocity().y, 2));
     let velocityX = plane.GetLinearVelocity().x;
-    //console.log(plane.GetLinearVelocity().x);
-    if (velocityX > 10 || velocityX < -10) {
-        plane.ApplyImpulse(new b2Vec2(0, -2), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+
+    if (key == "ArrowLeft") {
+        plane.ApplyForce(new b2Vec2(-100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+        if (velocityX < -15) {
+            liftOnFront();
+        }
     }
-    
+    if (key == "ArrowRight") {
+        plane.ApplyForce(new b2Vec2(100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+        if (velocityX > 15) {
+            liftOnBack();
+        }
+    }
+
+    /*if (velocityX < -15) {
+        goUpward();
+    }
+    if (velocityX > 15) {
+        goUpward();
+    }*/
+
     world.Step(
         1 / 60,   //frame-rate
         10,       //velocity iterations
