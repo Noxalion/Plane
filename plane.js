@@ -81,6 +81,9 @@ function goUpward(){
 function update() {
     let velocityX = plane.GetLinearVelocity().x;
 
+    /*adjusted_force_vector = Math2D.rotate_point(force_vector, plane_angle, {x: 0, y: 0})
+    plane.ApplyForce(adjusted_force_vector, plane.GetWorldCenter())*/
+
     if (key == "ArrowLeft") {
         plane.ApplyForce(new b2Vec2(-100 * Math.cos(planeAngle), 100 * Math.sin(planeAngle)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
     }
