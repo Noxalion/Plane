@@ -1,0 +1,23 @@
+<html>
+   <head>
+      <title>Plane</title>
+      <style>
+         body{
+            overflow: hidden;
+         }
+
+         canvas{
+            border: 1px solid black;
+            box-sizing: border-box;
+            position: relative;
+            left: calc((100vw - 2400px) / 2);
+            top: calc((100vh - 1200px) / 2);
+         }
+      </style>
+   </head>
+   <body>
+      <canvas id="canvas" width="2400" height="1200"></canvas>
+      <script type="text/javascript" src="Box2d.min.js"></script>
+      <script type="text/javascript" src="plane.js"></script>
+   </body>
+</html>
