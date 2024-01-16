@@ -71,16 +71,10 @@ document.addEventListener('keyup', function() {
     key = "none";
 });
 
-/*function goUpward(){
+let planeAngle = 0;
+
+function goUpward(){
     plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-}*/
-
-function liftOnFront(){
-    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x - (7.5 / 10) / 2, plane.GetPosition().y));
-}
-
-function liftOnBack(){
-    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x + (7.5 / 10) / 2, plane.GetPosition().y));
 }
 
 
@@ -88,24 +82,25 @@ function update() {
     let velocityX = plane.GetLinearVelocity().x;
 
     if (key == "ArrowLeft") {
-        plane.ApplyForce(new b2Vec2(-100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-        if (velocityX < -15) {
-            liftOnFront();
-        }
+        plane.ApplyForce(new b2Vec2(-100 * Math.cos(planeAngle), 100 * Math.sin(planeAngle)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
     }
     if (key == "ArrowRight") {
-        plane.ApplyForce(new b2Vec2(100, 0), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-        if (velocityX > 15) {
-            liftOnBack();
-        }
+        plane.ApplyForce(new b2Vec2(100 * Math.cos(planeAngle), 100 * Math.sin(planeAngle)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+    }
+    if (key == "ArrowUp" && planeAngle > -Math.PI / 2) {
+        planeAngle -= Math.PI / 60;
+    }
+    if (key == "ArrowDown" && planeAngle < Math.PI / 2) {
+        planeAngle += Math.PI / 60;
     }
 
-    /*if (velocityX < -15) {
+    plane.ApplyForce(new b2Vec2(0, -velocityX + Math.sin(planeAngle * 2)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+    plane.ApplyTorque(planeAngle);
+    //plane.SetAngularVelocity(planeAngle);
+
+    if (velocityX < -15 || velocityX > 15) {
         goUpward();
     }
-    if (velocityX > 15) {
-        goUpward();
-    }*/
 
     world.Step(
         1 / 60,   //frame-rate
