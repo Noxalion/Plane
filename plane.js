@@ -43,7 +43,7 @@ function createPlane(){
     planeFix.shape = new b2PolygonShape;
     planeFix.shape.SetAsBox(7.5 / 10, 2 / 10); //taille réelle: L = 7.5 et l = 2
     planeBody.position.x = 2;
-    planeBody.position.y = 36.5;
+    planeBody.position.y = 37;
     plane = world.CreateBody(planeBody);
     plane.CreateFixture(planeFix);
 }
@@ -61,7 +61,10 @@ createGround();
 createPlane();
 window.requestAnimationFrame(update);
 
+
+
 let key = "none";
+let liftForce = 0;
 
 document.addEventListener('keydown', function(event) {
     key = event.key;
@@ -71,39 +74,27 @@ document.addEventListener('keyup', function() {
     key = "none";
 });
 
-let planeAngle = 0;
-
-function goUpward(){
-    plane.ApplyForce(new b2Vec2(0, -100), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+function move(side, where){
+    plane.ApplyForce(new b2Vec2(80 * side, -liftForce), where);
 }
 
 
 function update() {
     let velocityX = plane.GetLinearVelocity().x;
+    liftForce = ((1.293 * Math.pow(velocityX, 2)) / 2) * 22 * 0.3;
+    let planePosition = new b2Vec2(plane.GetPosition().x, plane.GetPosition().y);
 
     /*adjusted_force_vector = Math2D.rotate_point(force_vector, plane_angle, {x: 0, y: 0})
     plane.ApplyForce(adjusted_force_vector, plane.GetWorldCenter())*/
 
     if (key == "ArrowLeft") {
-        plane.ApplyForce(new b2Vec2(-100 * Math.cos(planeAngle), 100 * Math.sin(planeAngle)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
+        move(-1, planePosition);
     }
     if (key == "ArrowRight") {
-        plane.ApplyForce(new b2Vec2(100 * Math.cos(planeAngle), 100 * Math.sin(planeAngle)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-    }
-    if (key == "ArrowUp" && planeAngle > -Math.PI / 2) {
-        planeAngle -= Math.PI / 60;
-    }
-    if (key == "ArrowDown" && planeAngle < Math.PI / 2) {
-        planeAngle += Math.PI / 60;
+        move(1, planePosition);
     }
 
-    plane.ApplyForce(new b2Vec2(0, -velocityX + Math.sin(planeAngle * 2)), new b2Vec2(plane.GetPosition().x, plane.GetPosition().y));
-    plane.ApplyTorque(planeAngle);
-    //plane.SetAngularVelocity(planeAngle);
-
-    if (velocityX < -15 || velocityX > 15) {
-        goUpward();
-    }
+    console.log(velocityX);
 
     world.Step(
         1 / 60,   //frame-rate
