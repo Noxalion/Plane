@@ -4,6 +4,7 @@
       <style>
          body{
             overflow: hidden;
+            font-family: sans-serif;
          }
 
          canvas{
@@ -13,10 +14,30 @@
             left: calc((100vw - 2400px) / 2);
             top: calc((100vh - 1200px) / 2);
          }
+
+         .hud{
+            position: absolute;
+            bottom: -20px;
+            left: calc((100vw - 2400px) / 2);
+            font-size: 60px;
+            width: 2400px;
+         }
+
+         .hud ul{
+            list-style: none;
+            display: flex;
+            justify-content: space-evenly;
+         }
       </style>
    </head>
    <body>
       <canvas id="canvas" width="2400" height="1200"></canvas>
+      <div class="hud">
+         <ul>
+            <li>Engine power: <span class="power">0</span></li>
+            <li>Altitude: <span class="alt">0</span></li>
+         </ul>
+      </div>
       <script type="text/javascript" src="Box2d.min.js"></script>
       <script type="text/javascript" src="plane.js"></script>
    </body>

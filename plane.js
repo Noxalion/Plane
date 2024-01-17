@@ -20,7 +20,7 @@ let groundBody = new b2BodyDef;
 let groundFix = new b2FixtureDef;
 
 function createGround(){
-    groundFix.friction = 0.9;
+    groundFix.friction = 0.5;
 
     groundBody.type = b2Body.b2_staticBody;
     groundBody.position.x = 0;
@@ -65,6 +65,15 @@ window.requestAnimationFrame(update);
 
 let key = "none";
 let liftForce = 0;
+let enginePower = 0;
+let fps = 60;
+let velocityX = plane.GetLinearVelocity().x;
+let planeAngle = 0;
+let motorPosition;
+let wingsPosition;
+let enginePowerHUD = document.querySelector(".power");
+let altituderHUD = document.querySelector(".alt");
+
 
 document.addEventListener('keydown', function(event) {
     key = event.key;
@@ -74,30 +83,44 @@ document.addEventListener('keyup', function() {
     key = "none";
 });
 
-function move(side, where){
-    plane.ApplyForce(new b2Vec2(80 * side, -liftForce), where);
+function move(enginePower, where){
+    plane.ApplyForce(new b2Vec2(enginePower * 80, 0), where);
+}
+
+function flight(where){
+    plane.ApplyForce(new b2Vec2(0, -liftForce), where);
 }
 
 
 function update() {
-    let velocityX = plane.GetLinearVelocity().x;
-    liftForce = ((1.293 * Math.pow(velocityX, 2)) / 2) * 22 * 0.3;
-    let planePosition = new b2Vec2(plane.GetPosition().x, plane.GetPosition().y);
+    planeAngle = plane.GetAngle();
+    velocityX = plane.GetLinearVelocity().x;
+    liftForce = ((1.293 * Math.pow(velocityX, 2)) / 2) * (22 / 10) * (0.3 * Math.cos(planeAngle));
+    motorPosition = new b2Vec2(plane.GetPosition().x + (7.5 / 10), plane.GetPosition().y);
+    wingsPosition = new b2Vec2(plane.GetPosition().x, plane.GetPosition().y);
+    enginePowerHUD.innerText = Math.round(enginePower * 80);
+    altituderHUD.innerText = -Math.round(plane.GetLinearVelocity().y);
 
     /*adjusted_force_vector = Math2D.rotate_point(force_vector, plane_angle, {x: 0, y: 0})
     plane.ApplyForce(adjusted_force_vector, plane.GetWorldCenter())*/
 
     if (key == "ArrowLeft") {
-        move(-1, planePosition);
+        enginePower -= 1/fps;
     }
     if (key == "ArrowRight") {
-        move(1, planePosition);
+        enginePower += 1/fps;
     }
 
-    console.log(velocityX);
+    move(enginePower, motorPosition);
+    flight(wingsPosition);
+
+    console.log("power: " + enginePower * 80);
+    console.log("velocityX: " + velocityX);
+    console.log("liftForce: " + liftForce);
+    console.log("gravity: " + 10 * planeFix.density);
 
     world.Step(
-        1 / 60,   //frame-rate
+        1 / fps,   //frame-rate
         10,       //velocity iterations
         10        //position iterations
     );
